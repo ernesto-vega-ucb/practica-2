@@ -19,7 +19,8 @@
     "express": "^5.2.1",
     "glob": "^13.0.0",
     "jsonwebtoken": "^9.0.3",
-    "tar": "^7.5.7"
+    "tar": "^7.5.7",    
+    "jest": "^29.5.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
