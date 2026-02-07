@@ -106,6 +106,12 @@ jobs:
     # =========================
     # 8. Smoke test
     # =========================
+    - name: Create dot env file
+      run: |
+        touch backend/users-service/.env
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> backend/users-service/.env
+        echo "API_KEY=${{ secrets.API_KEY }}" >> backend/users-service/.env
+
     - name: Run docker-compose
       run: |
         docker compose -f backend/docker-compose.yml up -d
