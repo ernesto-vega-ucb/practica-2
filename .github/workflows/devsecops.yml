@@ -114,6 +114,11 @@ jobs:
     # =========================
     # 8. Smoke test
     # =========================
+
+    - name: Create dummy .env file
+      run: |
+        mkdir -p backend/academic-service
+        touch backend/academic-service/.env
     - name: Run docker-compose
       run: |
         docker compose -f backend/docker-compose.yml up -d
