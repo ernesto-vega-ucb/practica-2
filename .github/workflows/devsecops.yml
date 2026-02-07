@@ -25,10 +25,10 @@ jobs:
     # 3. Install & Test Backend
     # =========================
     - name: Create dot env file
-      run: |
-        touch backend/users-service/.env
-        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> backend/users-service/.env
-        echo "API_KEY=${{ secrets.API_KEY }}" >> backend/users-service/.env
+      working-directory: backend/users-service
+      run: |       
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
+        echo "API_KEY=${{ secrets.API_KEY }}" >> .env
     - name: Install & Test users-service
       run: |
         cd backend/users-service
