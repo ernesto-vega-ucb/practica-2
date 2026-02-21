@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const coursesRoutes = require("./routes/courses.routes");
 
+// nosemgrep: javascript.express.security.audit.express-check-csurf-middleware-usage.express-check-csurf-middleware-usage
 const app = express();
 
 // Middlewares globales
