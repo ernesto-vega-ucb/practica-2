@@ -72,3 +72,16 @@ Cada ítem del backlog se encuentra directamente vinculado a un **microservicio 
 
 ### 🧠 Nota Metodológica
 El backlog se concibe como un **artefacto vivo**, susceptible de ser refinado y re-priorizado a medida que evolucionan los requerimientos funcionales, no funcionales y de seguridad.
+
+
+## Justificación de los cambios realizados en el nuevo archivo yml de actions
+
+Instalación con Caché: Se añadió cache 'npm' en el setup de Node para que las ejecuciones subsiguientes sean mucho más rápidas.
+
+Linting Integrado: Se añadió la ejecución de npx eslint, esto garantiza que si hay mal código o malas prácticas de estilo, el pipeline se detenga antes de gastar recursos en el build.
+
+Versionado Dinámico: Se utiliza ${{ github.sha }} para etiquetar las imágenes Docker, esto es fundamental para la trazabilidad  en el sentido de saber exactamente qué código está dentro de cada imagen.
+
+SCA Robusto: Trivy ahora está configurado con exit-code: 1 y severity: 'CRITICAL,HIGH', esto significa que si una librería externa tiene una vulnerabilidad grave sin agregar un parche, el despliegue se bloquea automáticamente.
+
+Validación de Salud (Smoke Test): El comando curl --fail asegura que si el servicio devuelve un error (404, 500), de manera que el paso se marque como fallido.
