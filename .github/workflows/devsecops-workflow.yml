@@ -77,7 +77,9 @@ jobs:
 
       - name: Build Docker Images
         run: |
-          cd backend
+          cd backend/api-gateway
+          npm install --package-lock-only
+          cd ..
           docker compose build
           docker tag users-service:latest users-service:${{ env.DOCKER_IMAGE_TAG }}
           docker tag academic-service:latest academic-service:${{ env.DOCKER_IMAGE_TAG }}
