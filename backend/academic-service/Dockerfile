@@ -7,5 +7,7 @@ RUN npm install --omit=dev
 
 COPY . .
 
+USER node
+
 EXPOSE 3002
 CMD ["node", "src/server.js"]

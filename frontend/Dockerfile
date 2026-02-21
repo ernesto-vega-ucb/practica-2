@@ -17,6 +17,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+USER node
+
 RUN npm run build
 # Serve
 FROM nginx:alpine

@@ -86,4 +86,6 @@ SCA Robusto: Trivy ahora está configurado con exit-code: 1 y severity: 'CRITICA
 
 Validación de Salud (Smoke Test): El comando curl --fail asegura que si el servicio devuelve un error (404, 500), de manera que el paso se marque como fallido.
 
-Usamos eslint@8 para mantener compatibilidad con archivos .eslintrc tradicionales
+Se usa eslint@8 para mantener compatibilidad con archivos .eslintrc tradicionales.
+
+Se aplicó el usuario node para manejar los contenedores en lugar del usuario root, esto para evitar vulnerabilidades.
