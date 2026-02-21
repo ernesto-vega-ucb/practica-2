@@ -85,3 +85,5 @@ Versionado Dinámico: Se utiliza ${{ github.sha }} para etiquetar las imágenes 
 SCA Robusto: Trivy ahora está configurado con exit-code: 1 y severity: 'CRITICAL,HIGH', esto significa que si una librería externa tiene una vulnerabilidad grave sin agregar un parche, el despliegue se bloquea automáticamente.
 
 Validación de Salud (Smoke Test): El comando curl --fail asegura que si el servicio devuelve un error (404, 500), de manera que el paso se marque como fallido.
+
+Usamos eslint@8 para mantener compatibilidad con archivos .eslintrc tradicionales
