@@ -13,6 +13,9 @@ services:
       - "3001"
     networks:
       - backend-net
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
 
   # =========================
   # ACADEMIC SERVICE (Courses)
@@ -27,6 +30,9 @@ services:
       - "3002"
     networks:
       - backend-net
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
   # =========================
   # API GATEWAY
   # =========================
@@ -41,6 +47,9 @@ services:
       - academic-service
     networks:
       - backend-net
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
 
   # =========================
   # FRONTEND (React SPA)

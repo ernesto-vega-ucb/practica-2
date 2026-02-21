@@ -18,3 +18,6 @@ spec:
           image: api-gateway:latest
           ports:
             - containerPort: 3000
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false

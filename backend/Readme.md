@@ -89,3 +89,5 @@ Validación de Salud (Smoke Test): El comando curl --fail asegura que si el serv
 Se usa eslint@8 para mantener compatibilidad con archivos .eslintrc tradicionales.
 
 Se aplicó el usuario node para manejar los contenedores en lugar del usuario root, esto para evitar vulnerabilidades.
+
+Se agregó definiciones de security que vayan acorde a lo que requiere Semgrep

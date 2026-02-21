@@ -18,3 +18,6 @@ spec:
           image: academic-service:latest
           ports:
             - containerPort: 3002
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
