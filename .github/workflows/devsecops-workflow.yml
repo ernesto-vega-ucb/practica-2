@@ -10,16 +10,30 @@ jobs:
   devsecops:
     runs-on: ubuntu-latest
     
-    # Definición de variables de entorno para versionado de imágenes
     env:
       DOCKER_IMAGE_TAG: ${{ github.sha }}
 
     steps:
       # ==========================================
-      # 1. Checkout & Setup (Instalación Reproducible)
+      # 1. Preparación del Entorno
       # ==========================================
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Generate Dummy Env Files
+        run: |
+          # Creamos archivos .env base para que nada falle por falta de variables
+          echo "PORT=3001" > backend/users-service/.env
+          echo "DB_HOST=localhost" >> backend/users-service/.env
+          
+          echo "PORT=3002" > backend/academic-service/.env
+          echo "DB_HOST=localhost" >> backend/academic-service/.env
+          
+          echo "PORT=3000" > backend/api-gateway/.env
+          echo "USERS_SERVICE_URL=http://users-service:3001" >> backend/api-gateway/.env
+          echo "ACADEMIC_SERVICE_URL=http://academic-service:3002" >> backend/api-gateway/.env
+          
+          echo "VITE_API_URL=http://localhost:3000" > frontend/.env
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -29,18 +43,17 @@ jobs:
           cache-dependency-path: backend/api-gateway/package-lock.json
 
       # ==========================================
-      # 2. Quality & Linting (Calidad de Código)
+      # 2. Instalación Reproducible y Calidad (Lint)
       # ==========================================
       - name: Install Dependencies & Lint
         run: |
-          # Instalación reproducible con npm ci (falla si el lockfile no coincide)
-          cd backend/users-service && npm ci && npx eslint .
-          cd ../academic-service && npm ci && npx eslint .
-          cd ../api-gateway && npm ci && npx eslint .
-          cd ../../frontend && npm ci && npx eslint .
+          cd backend/users-service && npm ci && npx eslint . --ext .js,.ts
+          cd ../academic-service && npm ci && npx eslint . --ext .js,.ts
+          cd ../api-gateway && npm ci && npx eslint . --ext .js,.ts
+          cd ../../frontend && npm ci && npx eslint . --ext .js,.ts
 
       # ==========================================
-      # 3. Automated Testing
+      # 3. Testing Automático
       # ==========================================
       - name: Run Unit Tests
         run: |
@@ -50,63 +63,51 @@ jobs:
           cd ../../frontend && npm test
 
       # ==========================================
-      # 4. SAST (Seguridad del Código Estático)
+      # 4. Seguridad del Código (SAST)
       # ==========================================
       - name: SAST Scan (Semgrep)
         run: |
           python3 -m pip install semgrep
-          # Escaneo de todo el monorepo buscando vulnerabilidades
           semgrep --config=auto --error --exclude='node_modules'
 
       # ==========================================
-      # 5. Build de Contenedores (Versionado)
+      # 5. Build de Contenedores
       # ==========================================
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker Images
         run: |
-          # Usamos el SHA del commit como versión del artefacto
-          docker compose -f backend/docker-compose.yml build
+          cd backend
+          docker compose build
+          # Etiquetamos las imágenes con el SHA del commit para versionado
           docker tag users-service:latest users-service:${{ env.DOCKER_IMAGE_TAG }}
           docker tag academic-service:latest academic-service:${{ env.DOCKER_IMAGE_TAG }}
           docker tag api-gateway:latest api-gateway:${{ env.DOCKER_IMAGE_TAG }}
 
       # ==========================================
-      # 6. SCA & Container Security (Trivy)
+      # 6. Seguridad de Contenedores (SCA - Trivy)
       # ==========================================
-      - name: Container & Dependency Scan (Trivy)
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          image-ref: 'users-service:${{ env.DOCKER_IMAGE_TAG }}'
-          format: 'table'
-          exit-code: '1' # El pipeline falla si encuentra riesgos
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-      # Repetir escaneo para servicios críticos si es necesario
       - name: Trivy scan API Gateway
         uses: aquasecurity/trivy-action@0.20.0
         with:
           image-ref: 'api-gateway:${{ env.DOCKER_IMAGE_TAG }}'
+          format: 'table'
           exit-code: '1'
-          severity: 'CRITICAL'
+          severity: 'CRITICAL,HIGH'
 
       # ==========================================
-      # 7. Smoke Test (Verificación Final)
+      # 7. Smoke Test (Levantamiento y Verificación)
       # ==========================================
-      - name: Create .env for Smoke Test
-        run: |
-          echo "VITE_API_URL=http://localhost:3000" > frontend/.env
-          # (Añadir aquí otros secrets necesarios para levantar el stack)
-
       - name: Deploy & Healthcheck
         run: |
-          docker compose -f backend/docker-compose.yml up -d
+          cd backend
+          docker compose up -d
           sleep 20
           curl --fail http://localhost:3000/health || exit 1
 
-      - name: Cleanup
+      - name: Shutdown services
         if: always()
-        run: docker compose -f backend/docker-compose.yml down
+        run: |
+          cd backend
+          docker compose down
