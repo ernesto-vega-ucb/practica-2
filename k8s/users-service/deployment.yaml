@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: users-service
   namespace: backend
+spec:
   replicas: 1
   selector:
     matchLabels:
@@ -15,5 +16,6 @@ metadata:
       containers:
         - name: users-service
           image: users-service:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001

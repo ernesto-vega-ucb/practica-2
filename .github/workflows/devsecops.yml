@@ -22,13 +22,31 @@ jobs:
         node-version: 20
 
     # =========================
+    # 5.5 Create .env files (CI)
+    # =========================
+    - name: Create env files for Docker Compose
+      run: |
+        # Backend services
+        cp backend/users-service/.env.example backend/users-service/.env
+        cp backend/academic-service/.env.example backend/academic-service/.env
+        cp backend/api-gateway/.env.example backend/api-gateway/.env
+
+        echo "DB_HOST=${{ secrets.USERS_DB_HOST }}" >> backend/users-service/.env
+        echo "DB_USER=${{ secrets.USERS_DB_USER }}" >> backend/users-service/.env
+        echo "DB_PASSWORD=${{ secrets.USERS_DB_PASSWORD }}" >> backend/users-service/.env
+
+        echo "DB_HOST=${{ secrets.ACADEMIC_DB_HOST }}" >> backend/academic-service/.env
+        echo "DB_USER=${{ secrets.ACADEMIC_DB_USER }}" >> backend/academic-service/.env
+        echo "DB_PASSWORD=${{ secrets.ACADEMIC_DB_PASSWORD }}" >> backend/academic-service/.env
+
+        echo "USERS_SERVICE_URL=http://users-service:3001" >> backend/api-gateway/.env
+        echo "ACADEMIC_SERVICE_URL=http://academic-service:3002" >> backend/api-gateway/.env
+        # Frontend (build/test time)
+        cp frontend/.env.example frontend/.env
+        echo "VITE_API_URL=http://api-gateway:3000" >> frontend/.env
+    # =========================
     # 3. Install & Test Backend
     # =========================
-    - name: Create dot env file
-      working-directory: backend/users-service
-      run: |       
-        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
-        echo "API_KEY=${{ secrets.API_KEY }}" >> .env
     - name: Install & Test users-service
       run: |
         cd backend/users-service
@@ -74,6 +92,14 @@ jobs:
       run: |
         cd backend/api-gateway
         semgrep --config=auto --severity=ERROR
+    
+    - name: Validate env files
+      run: |
+        ls -la backend/users-service
+        ls -la backend/academic-service
+        ls -la backend/api-gateway
+        ls -la frontend
+
     # =========================
     # 6. Docker Build
     # =========================
@@ -90,15 +116,13 @@ jobs:
     - name: Trivy scan users-service
       uses: aquasecurity/trivy-action@0.20.0
       with:
-        scan-type: 'fs'
         image-ref: users-service
-        severity: CRITICAL
+        severity: HIGH
         exit-code: 1
 
     - name: Trivy scan academic-service
       uses: aquasecurity/trivy-action@0.20.0
       with:
-        scan-type: 'fs'
         image-ref: academic-service
         severity: CRITICAL
         exit-code: 1
@@ -106,7 +130,6 @@ jobs:
     - name: Trivy scan api-gateway
       uses: aquasecurity/trivy-action@0.20.0
       with:
-        scan-type: 'fs'
         image-ref: api-gateway
         severity: CRITICAL
         exit-code: 1
@@ -114,11 +137,6 @@ jobs:
     # =========================
     # 8. Smoke test
     # =========================
-
-    - name: Create dummy .env file
-      run: |
-        mkdir -p backend/academic-service
-        touch backend/academic-service/.env
     - name: Run docker-compose
       run: |
         docker compose -f backend/docker-compose.yml up -d
@@ -130,4 +148,4 @@ jobs:
 
     - name: Shutdown services
       if: always()
-      run: docker compose -f backend/docker-compose.yml down
+      run: docker compose -f backend/docker-compose.yml down || true
