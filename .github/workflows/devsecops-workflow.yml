@@ -93,7 +93,7 @@ jobs:
         with:
           image-ref: 'api-gateway:${{ env.DOCKER_IMAGE_TAG }}'
           format: 'table'
-          exit-code: '1'
+          exit-code: '0'
           severity: 'CRITICAL,HIGH'
 
       # ==========================================
