@@ -16,9 +16,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
-COPY --chown=node:node . .
-
-USER node
+COPY . .
 
 RUN npm run build
 # Serve
